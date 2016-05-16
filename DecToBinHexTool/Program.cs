@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace DecToBinHexTool
@@ -16,7 +13,10 @@ namespace DecToBinHexTool
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainForm());
+
+            var f = new MainForm();
+            var p = new Presenter(f);
+            Application.Run(f);
         }
     }
 }
