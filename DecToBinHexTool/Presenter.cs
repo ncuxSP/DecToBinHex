@@ -23,21 +23,18 @@ namespace DecToBinHexTool
 
         public static string ProgressMessage(int number, int seconds)
         {
-            return number + ", will be computed in " + seconds + " seconds...";
+            return string.Format("{0}, will be computed in {1} seconds...", number, seconds);
         }
 
         public static string ResultMessage(int number, string result)
         {
-            return number + " = " + result;
+            return string.Format("{0} = {1}", number, result);
         }
 
         private void _view_ComputeNewNumber(int number)
         {
-            Random rnd = new Random();
-            var seconds = rnd.Next(5, 30);
-
-            _solver.AddTask(_result.Count, number, seconds);
-            _result.Add(ProgressMessage(number, seconds));
+            _result.Add(string.Empty);
+            _solver.AddTask(_result.Count - 1, number);
         }
 
         private void _solver_UpdateResult(int idx, string result)

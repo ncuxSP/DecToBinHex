@@ -44,16 +44,16 @@ namespace DecToBinHexTool
         {
             if (e.KeyCode == Keys.Return)
             {
-                TryParseInt();
+                TryParseNewNumber();
             }
         }
 
         private void addButton_Click(object sender, EventArgs e)
         {
-            TryParseInt();
+            TryParseNewNumber();
         }
 
-        private void TryParseInt()
+        private void TryParseNewNumber()
         {
             int n = 0;
             try
@@ -62,7 +62,7 @@ namespace DecToBinHexTool
             }
             catch (Exception ex) when (ex is FormatException || ex is OverflowException)
             {
-                MessageBox.Show("Try to enter integer number between " + int.MinValue + " and " + int.MaxValue);
+                MessageBox.Show($"Try to enter integer number between {int.MinValue} and {int.MaxValue}");
                 return;
             }
 

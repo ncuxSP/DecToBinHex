@@ -14,9 +14,16 @@ namespace DecToBinHexTool
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
-            var f = new MainForm();
-            var p = new Presenter(f);
-            Application.Run(f);
+            try
+            {
+                var f = new MainForm();
+                var p = new Presenter(f);
+                Application.Run(f);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message);
+            }
         }
     }
 }

@@ -33,14 +33,19 @@ namespace DecToBinHexTool
             _bw.RunWorkerCompleted += _bw_RunWorkerCompleted;
         }
         
-        public void AddTask(int idx, int number, int secondsRemaining)
+        public void AddTask(int idx, int number)
         {
+            Random rnd = new Random();
+            var seconds = rnd.Next(5, 30);
+
+            UpdateResult?.Invoke(idx, Presenter.ProgressMessage(number, seconds));
+
             var task = new TaskDescription
             {
                 Idx = idx,
                 Number = number,
-                SecondsRemaining = secondsRemaining,
-                TimeRemaining = secondsRemaining,
+                SecondsRemaining = seconds,
+                TimeRemaining = seconds,
                 Result = string.Empty
             };
 
@@ -69,6 +74,55 @@ namespace DecToBinHexTool
             }
         }
         
+        #region BackgroundWorker Thread
+
+        private bool UpdateTasks(double elapsedTime)
+        {
+            var t = (ICollection)_tasks;
+            lock (t.SyncRoot)
+            {
+                int taskToComputeIdx = -1;
+                double taskToComputeTime = double.MaxValue;
+
+                for (var i = _tasks.Count - 1; i >= 0; i--)
+                {
+                    var task = _tasks[i];
+                    task.TimeRemaining -= elapsedTime;
+
+                    if (task.Result == string.Empty && task.TimeRemaining < taskToComputeTime)
+                    {
+                        taskToComputeIdx = i;
+                        taskToComputeTime = task.TimeRemaining;
+                    }
+
+                    var secRemaining = (int)task.TimeRemaining + 1;
+                    if (secRemaining < task.SecondsRemaining)
+                    {
+                        task.SecondsRemaining = secRemaining;
+                        _bw.ReportProgress(task.Idx, Presenter.ProgressMessage(task.Number, secRemaining));
+                    }
+
+                    if (task.TimeRemaining <= 0)
+                    {
+                        if (task.Result == string.Empty)
+                        {
+                            task.Result = Compute(task.Number);
+                        }
+                        _bw.ReportProgress(task.Idx, Presenter.ResultMessage(task.Number, task.Result));
+                        _tasks.RemoveAt(i);
+                        taskToComputeTime = taskToComputeIdx = -1;
+                    }
+                }
+
+                if (taskToComputeIdx >= 0)
+                {
+                    _tasks[taskToComputeIdx].Result = Compute(_tasks[taskToComputeIdx].Number);
+                }
+
+                return _tasks.Count == 0;
+            }
+        }
+        
         private void _bw_DoWork(object sender, DoWorkEventArgs e)
         {
             var currentTime = DateTime.Now;
@@ -79,37 +133,16 @@ namespace DecToBinHexTool
                 var elapsedTime = (DateTime.Now - currentTime).TotalSeconds;
                 currentTime = DateTime.Now;
 
-                var t = (ICollection)_tasks;
-                lock (t.SyncRoot)
+                workComplete = UpdateTasks(elapsedTime);
+
+                elapsedTime = (DateTime.Now - currentTime).TotalSeconds;
+                if (elapsedTime < 0.1)
                 {
-                    for (var i = _tasks.Count - 1; i >= 0; i--)
-                    {
-                        var task = _tasks[i];
-                        task.TimeRemaining -= elapsedTime;
-                        
-                        var secRemaining = (int)task.TimeRemaining + 1;
-                        if (secRemaining < task.SecondsRemaining)
-                        {
-                            task.SecondsRemaining = secRemaining;
-                            _bw.ReportProgress(task.Idx, Presenter.ProgressMessage(task.Number, secRemaining));
-                        }
-
-                        if (task.TimeRemaining <= 0)
-                        {
-                            if (task.Result == string.Empty)
-                            {
-                                task.Result = Compute(task.Number);
-                            }
-                            _bw.ReportProgress(task.Idx, Presenter.ResultMessage(task.Number, task.Result));
-                            _tasks.RemoveAt(i);
-                        }
-                    }
-
-                    workComplete = _tasks.Count == 0;
+                    Thread.Sleep(100);
                 }
-                Thread.Sleep(100);
             }
-
         }
+
+        #endregion
     }
 }
