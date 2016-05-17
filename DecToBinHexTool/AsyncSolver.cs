@@ -81,18 +81,19 @@ namespace DecToBinHexTool
             var t = (ICollection)_tasks;
             lock (t.SyncRoot)
             {
-                int taskToComputeIdx = -1;
-                double taskToComputeTime = double.MaxValue;
+                TaskDescription taskToCompute = null;
 
                 for (var i = _tasks.Count - 1; i >= 0; i--)
                 {
                     var task = _tasks[i];
                     task.TimeRemaining -= elapsedTime;
 
-                    if (task.Result == string.Empty && task.TimeRemaining < taskToComputeTime)
+                    if (task.Result == string.Empty)
                     {
-                        taskToComputeIdx = i;
-                        taskToComputeTime = task.TimeRemaining;
+                        if (taskToCompute == null || task.TimeRemaining < taskToCompute.TimeRemaining)
+                        {
+                            taskToCompute = task;
+                        }
                     }
 
                     var secRemaining = (int)task.TimeRemaining + 1;
@@ -110,13 +111,12 @@ namespace DecToBinHexTool
                         }
                         _bw.ReportProgress(task.Idx, Presenter.ResultMessage(task.Number, task.Result));
                         _tasks.RemoveAt(i);
-                        taskToComputeTime = taskToComputeIdx = -1;
                     }
                 }
 
-                if (taskToComputeIdx >= 0)
+                if (taskToCompute != null)
                 {
-                    _tasks[taskToComputeIdx].Result = Compute(_tasks[taskToComputeIdx].Number);
+                    taskToCompute.Result = Compute(taskToCompute.Number);
                 }
 
                 return _tasks.Count == 0;
