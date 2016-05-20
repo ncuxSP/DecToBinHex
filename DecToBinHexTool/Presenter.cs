@@ -6,8 +6,8 @@ namespace DecToBinHexTool
     class Presenter
     {
         private readonly IView _view;
-        private AsyncSolver _solver;
-        private BindingList<string> _result;
+        private readonly AsyncSolver _solver;
+        private readonly BindingList<string> _result;
 
         public Presenter(IView view)
         {
@@ -29,6 +29,11 @@ namespace DecToBinHexTool
         public static string ResultMessage(int number, string result)
         {
             return string.Format("{0} = {1}", number, result);
+        }
+
+        public static string WaitingMessage(int number)
+        {
+            return string.Format("{0}, getting result...", number);
         }
 
         private void _view_ComputeNewNumber(int number)

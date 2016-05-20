@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 
 namespace DecToBinHexTool
@@ -15,6 +17,8 @@ namespace DecToBinHexTool
 
         protected string Compute(int number)
         {
+            Debug.WriteLine(Thread.CurrentThread.GetHashCode());
+            Thread.Sleep(2000);
             try
             {
                 var sb = new StringBuilder(GetBufferSize());
